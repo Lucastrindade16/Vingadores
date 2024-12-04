@@ -1,9 +1,13 @@
 from string import capwords
 from model.vingador import Vingador
 from os import system
+from model.database import Database
 
 class Interface:
 
+    def __init__(self):
+        Vingador.carregar_herois()
+        self.menu_principal()
     def menu_principal(self):
         self.exibe_titulo_app()
         while True:
@@ -61,15 +65,31 @@ class Interface:
                 self.menu_principal()
 
     def cadastrar_vingador(self):
+        '''Exibe o formulário de cadastro de vingador e cria um novo vingador.'''
         nome_heroi = input("Nome do herói: ")
         nome_real = input("Nome real: ")
         categoria = input("Categoria: ").capitalize()
-        poderes = input("Poderes (separados por vírgula): ").split(',')
+        poderes = input("Poderes (separados por vírgula): ").split(',') # armazena em uma lista
         poder_principal = input("Poder Principal: ")
-        fraquezas = input("Fraquezas: (separadas por vírgula): ").split(',')
+        fraquezas = input("Fraquezas: (separadas por vírgula): ").split(',') # armazena em uma lista
         nivel_forca = int(input("Nível de Força: "))
 
         Vingador(nome_heroi, nome_real, categoria, poderes, poder_principal, fraquezas, nivel_forca)
+
+        # Salva o vingador no banco de dados
+        try:
+            db = Database()
+            db.connect()
+
+            query = "INSERT INTO heroi (nome_heroi, nome_real, categoria, poderes, poder_principal, fraquezas, nivel_forca) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+            
+            values = (nome_heroi, nome_real, categoria, ', '.join(poderes), poder_principal, ', '.join(fraquezas), nivel_forca)
+
+            db.execute_query(query, values) # executa a query, substituindo os placeholders pelos valores
+        except Exception as e:
+            print(f"Erro ao salvar vingador no banco de dados: {e}")
+        finally:
+            db.disconnect()
 
         print(f"Vingador(a) '{nome_heroi}' cadastrado com sucesso.")
         self.aguardar_enter()
@@ -136,11 +156,11 @@ class Interface:
     def exibe_titulo_app():
         system('cls')
         print('''
-              
+
 ██╗░░░██╗██╗███╗░░██╗░██████╗░░█████╗░██████╗░░█████╗░██████╗░███████╗░██████╗
 ██║░░░██║██║████╗░██║██╔════╝░██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔════╝
 ╚██╗░██╔╝██║██╔██╗██║██║░░██╗░███████║██║░░██║██║░░██║██████╔╝█████╗░░╚█████╗░
 ░╚████╔╝░██║██║╚████║██║░░╚██╗██╔══██║██║░░██║██║░░██║██╔══██╗██╔══╝░░░╚═══██╗
 ░░╚██╔╝░░██║██║░╚███║╚██████╔╝██║░░██║██████╔╝╚█████╔╝██║░░██║███████╗██████╔╝
-░░░╚═╝░░░╚═╝╚═╝░░╚══╝░╚═════╝░╚═╝░░╚═╝╚═════╝░░╚════╝░╚═╝░░╚═╝╚══════╝╚═════╝░ 
+░░░╚═╝░░░╚═╝╚═╝░░╚══╝░╚═════╝░╚═╝░░╚═╝╚═════╝░░╚════╝░╚═╝░░╚═╝╚══════╝╚═════╝░    
         ''')

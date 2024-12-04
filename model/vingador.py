@@ -1,3 +1,6 @@
+from model import database
+
+
 class Vingador:
     
     CATEGORIAS_PERMITIDAS = ['Humano', 'Meta-humano', 'Androide', 'Deidade', 'Alienígena']
@@ -110,3 +113,20 @@ class Vingador:
     def listar_poderes(self):
         return self.poderes
     
+   
+   class Vingador:
+    @staticmethod
+
+    def carregar_herois():
+        try:
+            db = database()
+            db.connect()
+
+            query = 'SELECT nome_heroi, nome_real, categoria, poderes, poder_principal, fraquezas, nivel_forca FROM heroi'
+            herois = db.select(query)
+            for heroi in herois:
+                Vingador(*heroi)
+        except Exception as e:
+            print(f'Erro: {e}')
+        finally:
+            db.disconnect()
